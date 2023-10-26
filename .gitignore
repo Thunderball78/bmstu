@@ -1,3 +1,4 @@
 datasets/
 *.csv
 catboost_info/
+__pycache__/
