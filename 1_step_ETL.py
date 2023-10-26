@@ -39,20 +39,7 @@ class ETL:
             print(f"{type(e).__name__}: {e}")
             return None
 
-    def set_count(self, count):
-         with open("data.pickle", "wb") as file:
-            pickle.dump(count, file)
 
-    def get_count(self):
-        try: 
-            with open("data.pickle", "rb") as file:
-                return pickle.load(file)
-        except Exception as e:
-            self.set_count(1)
-            
-    def reset_count(self):
-        self.set_count(0)
-        return 1
 
     def extract(self, count=0):
         with pd.read_csv(self.filename, chunksize=self.chunksize, on_bad_lines='skip', low_memory=False) as reader:
@@ -71,18 +58,13 @@ class ETL:
                 self.load(df)
                 print('Chunk ', count, 'rows: ', count * self.chunksize)
                 count +=1
-                self.set_count(count)
-                
-                
+
+
+
     def run(self):
-        count = self.reset_count()
-        self.extract(count)
+        self.extract()
 
-    def resume(self,  chunksize=1000):
-        count = self.get_count()
-        self.extract(count)
-
-
+    
     def load(self, df):  
             """ 
             Загружает данные в базу данных
@@ -115,12 +97,8 @@ columns =  ['id', 'contract_number', 'purchase_code', 'provider_inn', 'provider_
 
 etl = ETL('fz.csv', columns, 'contracts', 10**5)
 etl.create_table()
-#etl.get_column_names()
-#etl.reset_count()
+etl.run()
 
-#
-#etl.run()
-#etl.resume()
 df = etl.select('''select * from contracts''')
-#print(df)
+print(df)
 df.to_csv('datasets/dataset.csv', sep=';', index=False)
